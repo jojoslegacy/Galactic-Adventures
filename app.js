@@ -1370,17 +1370,37 @@ const Ambient = (() => {
     tryGo();
   }
 
+  function fadeAndSuspend() {
+    if (!ctx || !master) return;
+    const now = ctx.currentTime;
+    try {
+      master.gain.cancelScheduledValues(now);
+      master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), now);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+    } catch (e) {}
+    setTimeout(() => {
+      try { if (ctx && ctx.state === 'running') ctx.suspend(); } catch (e) {}
+    }, 140);
+  }
+
   function onVisibility() {
     if (!running || !ctx) return;
     if (document.hidden) {
-      try { ctx.suspend(); } catch (e) {}
+      fadeAndSuspend();
     } else {
       try { ctx.resume(); } catch (e) {}
     }
   }
 
+  function onPageHide() {
+    if (!running || !ctx) return;
+    fadeAndSuspend();
+  }
+
   if (typeof document !== 'undefined') {
     document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pagehide', onPageHide);
+    window.addEventListener('beforeunload', onPageHide);
   }
 
   return { start, stop, toggle, isOn, syncFromState, setVolume, currentVol, setIntense, isIntense, forceResume };
