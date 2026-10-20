@@ -1188,6 +1188,71 @@ const Ambient = (() => {
     }
   }
 
+  // ---------- Higher-note Interstellar-style melodic phrases ----------
+  // Short modal fragments (high register) that evoke the film’s organ/string lines.
+  // Frequencies are relative multipliers from the current root so they stay in key.
+  const MODES = {
+    aeolian:   [1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5],   // natural minor
+    dorian:    [1, 9/8, 6/5, 4/3, 3/2, 5/3, 9/5],
+    phrygian:  [1, 16/15, 6/5, 4/3, 3/2, 8/5, 9/5],
+    lydian:    [1, 9/8, 5/4, 45/32, 3/2, 5/3, 15/8],
+    mixolydian:[1, 9/8, 5/4, 4/3, 3/2, 5/3, 9/5],
+    ionian:    [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8]
+  };
+  const MODE_NAMES = Object.keys(MODES);
+  let modeIdx = 0;
+
+  function playMelodicPhrase() {
+    if (!ctx || !shimmerBus || !running) return;
+    const base = currentFreqs || currentChord();
+    if (!base || !base.length) return;
+    const root = base[0];
+    const mode = MODES[MODE_NAMES[modeIdx % MODE_NAMES.length]];
+    const now = ctx.currentTime;
+    // Short 4–6 note phrase, high register (2–3 octaves up)
+    const length = 4 + Math.floor(Math.random() * 3);
+    const startOct = Math.random() < 0.6 ? 2 : 3;
+    for (let i = 0; i < length; i++) {
+      const step = mode[Math.floor(Math.random() * mode.length)];
+      let f = root * step * Math.pow(2, startOct);
+      if (f < 600) f *= 2;
+      if (f > 3200) continue;
+      const when = now + i * (0.28 + Math.random() * 0.18);
+      const level = 0.008 + Math.random() * 0.006;
+      const decay = 1.8 + Math.random() * 1.4;
+      // Soft sine with slight triangle blend for string-like edge
+      const osc = ctx.createOscillator();
+      osc.type = Math.random() < 0.7 ? 'sine' : 'triangle';
+      osc.frequency.value = f;
+      osc.detune.value = (Math.random() - 0.5) * 4;
+      const g = ctx.createGain();
+      g.gain.value = 0.0001;
+      osc.connect(g);
+      g.connect(shimmerBus);
+      g.gain.setValueAtTime(0.0001, when);
+      g.gain.exponentialRampToValueAtTime(level, when + 0.08);
+      g.gain.exponentialRampToValueAtTime(0.0001, when + 0.08 + decay);
+      osc.start(when);
+      try { osc.stop(when + 0.08 + decay + 0.15); } catch (e) {}
+    }
+    // Advance mode occasionally for variety
+    if (Math.random() < 0.45) modeIdx = (modeIdx + 1) % MODE_NAMES.length;
+  }
+
+  function scheduleMelodies() {
+    if (!running) return;
+    const prog = PROGRESSIONS[progIdx] || {};
+    // More frequent on Interstellar progressions, still sparse overall
+    const baseWait = prog.organ ? 4200 : 7000;
+    const wait = baseWait + Math.random() * 3500;
+    const t = setTimeout(() => {
+      if (!running) return;
+      if (Math.random() < (prog.organ ? 0.85 : 0.55)) playMelodicPhrase();
+      scheduleMelodies();
+    }, wait);
+    timers.push(t);
+  }
+
   function scheduleShimmers() {
     if (!running) return;
     // Dense star twinkles for galactic sparkle
@@ -1290,6 +1355,7 @@ const Ambient = (() => {
     startNoise();
     nextKeySoon();
     scheduleShimmers();
+    scheduleMelodies();
     scheduleTick();
     return true;
   }
