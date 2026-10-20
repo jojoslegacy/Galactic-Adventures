@@ -1,5 +1,14 @@
 # Galactic Academy
 
+## v29 — Gentle Background Wind-Down
+
+- On swipe-away / background, ambient music now fades out over ~2 s before the AudioContext is suspended. This removes the harsh twang that happened when the oscillators were cut mid-cycle.
+- On return, it resumes cleanly if Focus sound is still enabled.
+
+## v28 — Sharper Tuned Twinkles
+
+- Focus ambient twinkles are sharper (shorter decay ~0.3–0.8s, snappier attack) and more tightly tuned to the current drone/pad (minimal detune, harmonic multiples of chord tones).
+
 ## v27 — Pets & Faster Focus Music
 
 - **Focus music** progression is twice as fast (calm ~6–10s, intense ~3.5–6s).
