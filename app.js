@@ -164,13 +164,16 @@ const advancedUnlocked = (lang) => !isAdvanced(lang) || !!(S.advanced && S.advan
 let _utter = null;
 let _voices = [];
 const PREFERRED_VOICES = [
-  'Google US English', 'Google UK English Female', 'Google UK English Male',
-  'Samantha', 'Karen', 'Moira', 'Tessa', 'Fiona', 'Victoria', 'Allison',
-  'Ava', 'Zoe', 'Susan', 'Kathy', 'Serena', 'Emma', 'Jenny', 'Nicky', 'Aaron',
+  // Prefer the most natural / least robotic voices first (especially good on iOS & modern browsers)
+  'Samantha (Enhanced)', 'Samantha', 'Ava', 'Zoe', 'Allison', 'Victoria', 'Tessa', 'Moira',
+  'Google US English', 'Google UK English Female',
   'Microsoft Aria Online (Natural) - English (United States)',
-  'Microsoft Guy Online (Natural) - English (United States)',
   'Microsoft Jenny Online (Natural) - English (United States)',
-  'Microsoft Aria', 'Microsoft Guy', 'Microsoft Jenny', 'Samantha (Enhanced)'
+  'Microsoft Aria', 'Microsoft Jenny',
+  'Karen', 'Fiona', 'Serena', 'Emma', 'Nicky',
+  'Google UK English Male',
+  'Microsoft Guy Online (Natural) - English (United States)',
+  'Microsoft Guy', 'Aaron', 'Susan', 'Kathy'
 ];
 function loadVoices() {
   if (!window.speechSynthesis) return;
@@ -339,8 +342,11 @@ function speakText(textOrSections, btn) {
     }
     const item = _speakQueue.shift();
     _utter = new SpeechSynthesisUtterance(item.text);
-    _utter.rate = 0.94;
-    _utter.pitch = 1.0;
+    // Livelier, less robotic: slightly higher pitch + small natural variation
+    const baseRate = 0.98;
+    const basePitch = 1.12;
+    _utter.rate = baseRate + (Math.random() - 0.5) * 0.06;
+    _utter.pitch = basePitch + (Math.random() - 0.5) * 0.08;
     _utter.volume = 1;
     _utter.lang = prefer;
     if (voice) {
