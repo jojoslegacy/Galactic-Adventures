@@ -1070,23 +1070,64 @@ const Ambient = (() => {
       oscs.push({ osc, gain: g });
 
       // Soft air octave (depth) on higher partials only — single osc, no detune pair
-      // Interstellar organ drone: extra low octave sine on root
-      if (isOrgan && i === 0) {
-        const organ = ctx.createOscillator();
-        organ.type = 'sine';
-        organ.frequency.value = f / 2;
-        organ.detune.value = (Math.random() - 0.5) * 0.4;
-        const og = ctx.createGain();
-        og.gain.value = 0.0001;
-        organ.connect(og);
-        og.connect(padBus);
-        const oPeak = peak * 0.55;
-        og.gain.setValueAtTime(0.0001, now);
-        og.gain.exponentialRampToValueAtTime(oPeak, now + attack + 1.2);
-        og.gain.setValueAtTime(oPeak, now + 14);
-        og.gain.exponentialRampToValueAtTime(oPeak * 0.8, now + 22);
-        organ.start(now);
-        oscs.push({ osc: organ, gain: og });
+      // Complementary drones for depth, emotion, and suspense
+      if (i === 0) {
+        // Low root drone (always)
+        const rootDrone = ctx.createOscillator();
+        rootDrone.type = 'sine';
+        rootDrone.frequency.value = f / 2;
+        rootDrone.detune.value = (Math.random() - 0.5) * 0.3;
+        const rg = ctx.createGain();
+        rg.gain.value = 0.0001;
+        rootDrone.connect(rg);
+        rg.connect(padBus);
+        const rPeak = peak * (isOrgan ? 0.62 : 0.42);
+        rg.gain.setValueAtTime(0.0001, now);
+        rg.gain.exponentialRampToValueAtTime(rPeak, now + attack + 1.4);
+        rg.gain.setValueAtTime(rPeak, now + 16);
+        rg.gain.exponentialRampToValueAtTime(rPeak * 0.75, now + 24);
+        rootDrone.start(now);
+        oscs.push({ osc: rootDrone, gain: rg });
+
+        // Soft fifth drone (complementary tension / lift)
+        const fifth = f * 1.5;
+        if (fifth < 220) {
+          const fifthDrone = ctx.createOscillator();
+          fifthDrone.type = 'sine';
+          fifthDrone.frequency.value = fifth;
+          fifthDrone.detune.value = (Math.random() - 0.5) * 1.5;
+          const fg = ctx.createGain();
+          fg.gain.value = 0.0001;
+          fifthDrone.connect(fg);
+          fg.connect(padBus);
+          const fPeak = peak * 0.28;
+          fg.gain.setValueAtTime(0.0001, now);
+          fg.gain.exponentialRampToValueAtTime(fPeak, now + attack + 2.8);
+          fg.gain.setValueAtTime(fPeak, now + 18);
+          fg.gain.exponentialRampToValueAtTime(fPeak * 0.6, now + 26);
+          fifthDrone.start(now);
+          oscs.push({ osc: fifthDrone, gain: fg });
+        }
+
+        // Slow sub-drone an octave below the root for gravity / emotion
+        const sub = f / 4;
+        if (sub > 30) {
+          const subDrone = ctx.createOscillator();
+          subDrone.type = 'sine';
+          subDrone.frequency.value = sub;
+          subDrone.detune.value = (Math.random() - 0.5) * 0.2;
+          const sg = ctx.createGain();
+          sg.gain.value = 0.0001;
+          subDrone.connect(sg);
+          sg.connect(padBus);
+          const sPeak = peak * 0.22;
+          sg.gain.setValueAtTime(0.0001, now);
+          sg.gain.exponentialRampToValueAtTime(sPeak, now + attack + 3.5);
+          sg.gain.setValueAtTime(sPeak, now + 20);
+          sg.gain.exponentialRampToValueAtTime(sPeak * 0.7, now + 30);
+          subDrone.start(now);
+          oscs.push({ osc: subDrone, gain: sg });
+        }
       }
 
       if (i >= 1 && i <= 3 && f * 2 < 2400) {
