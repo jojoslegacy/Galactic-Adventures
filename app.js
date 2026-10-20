@@ -163,6 +163,7 @@ const advancedUnlocked = (lang) => !isAdvanced(lang) || !!(S.advanced && S.advan
 // ---------- Read Aloud (Web Speech API) ----------
 let _utter = null;
 let _voices = [];
+const IS_SILK = /Silk|Amazon|Kindle|Fire/i.test(navigator.userAgent || '');
 const PREFERRED_VOICES = [
   // Prefer the most natural / least robotic voices first (especially good on iOS & modern browsers)
   'Samantha (Enhanced)', 'Samantha', 'Ava', 'Zoe', 'Allison', 'Victoria', 'Tessa', 'Moira',
@@ -221,7 +222,11 @@ function startSpeechKeepAlive() {
         window.speechSynthesis.resume();
       } catch (e) {}
     }
-  }, 8000);
+    // Extra reset on Silk, which is more prone to getting stuck
+    if (IS_SILK && window.speechSynthesis.speaking) {
+      try { window.speechSynthesis.cancel(); } catch (e) {}
+    }
+  }, IS_SILK ? 5000 : 8000);
 }
 function stopSpeechKeepAlive() {
   if (_speechKeepAlive) {
@@ -366,14 +371,14 @@ function speakText(textOrSections, btn) {
     }
     const item = _speakQueue.shift();
     _utter = new SpeechSynthesisUtterance(item.text);
-    // Child-friendly: slower and clearer, with only tiny natural variation so words stay easy to understand
-    const baseRate = 0.84;
-    const basePitch = 1.05;
-    _utter.rate = baseRate + (Math.random() - 0.5) * 0.03;
-    _utter.pitch = basePitch + (Math.random() - 0.5) * 0.03;
+    // Child-friendly defaults; Silk (Amazon Fire) gets even slower/clearer settings and simpler voice handling
+    const baseRate = IS_SILK ? 0.78 : 0.84;
+    const basePitch = IS_SILK ? 1.0 : 1.05;
+    _utter.rate = baseRate + (Math.random() - 0.5) * (IS_SILK ? 0.02 : 0.03);
+    _utter.pitch = basePitch + (Math.random() - 0.5) * (IS_SILK ? 0.02 : 0.03);
     _utter.volume = 1;
     _utter.lang = prefer;
-    if (voice) {
+    if (voice && !IS_SILK) {
       _utter.voice = voice;
       if (voice.lang) _utter.lang = voice.lang;
     }
@@ -1422,6 +1427,19 @@ function render(html, wire) {
     fv.addEventListener('input', (e) => { e.stopPropagation(); applyVol(); });
     fv.addEventListener('change', (e) => { e.stopPropagation(); applyVol(); });
   }
+  const fsBtn = $app.querySelector('#fullscreen-btn');
+  if (fsBtn) {
+    fsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const el = document.documentElement;
+      if (!document.fullscreenElement && el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {});
+      } else if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+  }
   wire && wire();
 }
 const on = (sel, fn) => $app.querySelectorAll(sel).forEach((el) => el.addEventListener('click', () => fn(el)));
@@ -1435,6 +1453,7 @@ const header = (back, label) => {
       <input type="range" id="focus-vol" class="focus-vol" min="0" max="100" step="1" value="${volPct}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${volPct}" aria-label="Focus sound volume" ${S.focusSound ? '' : 'disabled'}>
     </label>
   </span>
+  <button type="button" class="chip" id="fullscreen-btn" title="Full screen" aria-label="Toggle full screen">⛶</button>
   <span class="chip">🔥 ${S.streak}</span> <span class="chip">💰 ${bal()}</span> <span class="chip">💎 ${S.shards}</span></span></div>`;
 };
 const confetti = () => {
@@ -2964,6 +2983,26 @@ function cards(html) {
   return out.length ? out : [html];
 }
 
+/** Short plain-English summary for the Zyx intro card when no hand-written INTROS entry exists. */
+function plainEnglishIntro(l) {
+  if (!l) return '<p>Read the short lesson cards next, then try the practice questions.</p>';
+  const raw = String(l.lesson || l.blurb || l.mission || '');
+  let text = raw
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+  // Take the first ~2 sentences or ~220 characters, whichever is shorter and still useful
+  const sentences = text.split(/(?<=[.!?])\s+/).filter(Boolean);
+  let summary = sentences.slice(0, 2).join(' ');
+  if (summary.length > 260) summary = summary.slice(0, 240).replace(/\s+\S*$/, '') + '…';
+  if (!summary) summary = (l.blurb || l.mission || 'This mission introduces the main idea you will practice next.');
+  return `<p>${summary}</p><p class="dim">Then look at the short lesson cards and try the practice questions.</p>`;
+}
+
 function lesson(lang, i, step) {
   const l = COURSES[lang].levels[i], steps = cards(l.lesson);
   if (step == null) {
@@ -2971,7 +3010,7 @@ function lesson(lang, i, step) {
       <div class="mission" style="--pc:${l.color}"><span class="planet big2">${l.planet}</span><div><h2>${l.title}</h2><b>${l.company}</b></div></div>
       <div class="card story" id="mission-story">📡 <i>${l.mission}</i><div class="goal">🎯 Build: <b>${l.product || l.mission}</b> ${l.icon}</div>
         <button type="button" class="btn-read" data-read="#mission-story" data-speak-mode="lesson" aria-label="Read mission aloud">🔊 Read Aloud</button></div>
-      <div class="card intro" id="mission-intro"><div class="kind">${X.mentor.icon} ${X.mentor.name} explains, in plain English</div>${(window.INTROS || {})[l.id] || ''}
+      <div class="card intro" id="mission-intro"><div class="kind">${X.mentor.icon} ${X.mentor.name} explains, in plain English</div>${(window.INTROS || {})[l.id] || plainEnglishIntro(l)}
         <button type="button" class="btn-read" data-read="#mission-intro" data-speak-mode="lesson" aria-label="Read introduction aloud">🔊 Read Aloud</button></div>
       <p class="dim center">Next: ${steps.length} short lesson card${steps.length > 1 ? 's' : ''}, then guided practice. Hints are free.</p>
       <button class="btn" id="go">Start learning</button>`, () => {
