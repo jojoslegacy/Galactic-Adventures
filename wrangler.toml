@@ -1,0 +1,9 @@
+name = "galactic-academy"
+compatibility_date = "2026-10-19"
+pages_build_output_dir = "."
+
+# For Workers static assets alternative:
+# [assets]
+# directory = "."
+# html_handling = "auto-trailing-slash"
+# not_found_handling = "single-page-application"
