@@ -857,6 +857,9 @@ const Ambient = (() => {
    * Mix of familiar lift cadences and soft color changes.
    */
   const PROGRESSIONS = [
+    // Interstellar-inspired: slower, organ-like, vast minor/modal space
+    { name: 'interstellar', chords: [CH.Am, CH.Em, CH.F, CH.C], organ: true, slow: true },
+    { name: 'gravity',      chords: [CH.Em, CH.Am, CH.Dm, CH.G], organ: true, slow: true },
     { name: 'voyage',   chords: [CH.C, CH.G, CH.Am, CH.F] },
     { name: 'horizon',  chords: [CH.C, CH.Am, CH.F, CH.G] },
     { name: 'trail',    chords: [CH.Am, CH.F, CH.C, CH.G] },
@@ -1040,6 +1043,8 @@ const Ambient = (() => {
     if (!ctx || !padBus) return;
     currentFreqs = freqs.slice();
     const now = ctx.currentTime;
+    const prog = PROGRESSIONS[progIdx] || {};
+    const isOrgan = !!prog.organ;
     // Longer crossfade for seamless transitions
     stopVoices(3.2);
     freqs.forEach((f, i) => {
@@ -1065,6 +1070,25 @@ const Ambient = (() => {
       oscs.push({ osc, gain: g });
 
       // Soft air octave (depth) on higher partials only — single osc, no detune pair
+      // Interstellar organ drone: extra low octave sine on root
+      if (isOrgan && i === 0) {
+        const organ = ctx.createOscillator();
+        organ.type = 'sine';
+        organ.frequency.value = f / 2;
+        organ.detune.value = (Math.random() - 0.5) * 0.4;
+        const og = ctx.createGain();
+        og.gain.value = 0.0001;
+        organ.connect(og);
+        og.connect(padBus);
+        const oPeak = peak * 0.55;
+        og.gain.setValueAtTime(0.0001, now);
+        og.gain.exponentialRampToValueAtTime(oPeak, now + attack + 1.2);
+        og.gain.setValueAtTime(oPeak, now + 14);
+        og.gain.exponentialRampToValueAtTime(oPeak * 0.8, now + 22);
+        organ.start(now);
+        oscs.push({ osc: organ, gain: og });
+      }
+
       if (i >= 1 && i <= 3 && f * 2 < 2400) {
         const air = ctx.createOscillator();
         air.type = 'sine';
@@ -1165,9 +1189,10 @@ const Ambient = (() => {
   function nextKeySoon() {
     if (!running) return;
     // Faster galactic motion: calm ~3.5–6s, intense ~1.8–3.2s
+    const prog = PROGRESSIONS[progIdx] || {};
     const wait = intensity
       ? (1800 + Math.random() * 1400)
-      : (3500 + Math.random() * 2500);
+      : (prog.slow ? (7000 + Math.random() * 4000) : (3500 + Math.random() * 2500));
     const t = setTimeout(() => {
       if (!running) return;
       advanceProgression();
@@ -1223,7 +1248,41 @@ const Ambient = (() => {
     startNoise();
     nextKeySoon();
     scheduleShimmers();
+    scheduleTick();
     return true;
+  }
+
+  // Soft Interstellar-style clock pulse (very quiet, only on organ progressions)
+  function scheduleTick() {
+    if (!running) return;
+    const prog = PROGRESSIONS[progIdx] || {};
+    if (!prog.organ) {
+      const t = setTimeout(scheduleTick, 4000);
+      timers.push(t);
+      return;
+    }
+    const t = setTimeout(() => {
+      if (!running || !ctx) return;
+      // Two soft ticks ~0.6s apart
+      const now = ctx.currentTime;
+      [0, 0.62].forEach((offset, idx) => {
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = 880 + (idx === 0 ? 0 : 40);
+        const g = ctx.createGain();
+        g.gain.value = 0.0001;
+        osc.connect(g);
+        g.connect(shimmerBus || master);
+        const when = now + offset;
+        g.gain.setValueAtTime(0.0001, when);
+        g.gain.exponentialRampToValueAtTime(0.018, when + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, when + 0.08);
+        osc.start(when);
+        try { osc.stop(when + 0.15); } catch (e) {}
+      });
+      scheduleTick();
+    }, 5200 + Math.random() * 1800);
+    timers.push(t);
   }
 
   function stop() {
