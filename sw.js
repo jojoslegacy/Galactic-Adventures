@@ -1,4 +1,4 @@
-const CACHE = 'galactic-academy-learning-v29';
+const CACHE = 'galactic-academy-learning-v30';
 const FILES = [
   './',
   'index.html',
