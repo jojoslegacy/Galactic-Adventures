@@ -1,5 +1,10 @@
 # Galactic Academy
 
+## v30 — Playful TTS
+
+- Read Aloud now prefers the least-robotic natural/enhanced voices first (Samantha Enhanced, Ava, neural Microsoft/Google, etc.).
+- Slightly higher pitch (~1.12) with small random rate/pitch variation so it feels livelier and less flat.
+
 ## v29 — Gentle Background Wind-Down
 
 - On swipe-away / background, ambient music now fades out over ~2 s before the AudioContext is suspended. This removes the harsh twang that happened when the oscillators were cut mid-cycle.
