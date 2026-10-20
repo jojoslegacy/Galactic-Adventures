@@ -449,6 +449,7 @@ function showStoragePrompt(force = false) {
     <h2 id="storage-protection-title" style="text-align:center;margin:8px 0 12px">Protect your game progress?</h2>
     <p style="line-height:1.5">Galactic Academy saves learner profiles and progress on this device. You can ask your browser to protect that data from automatic storage cleanup, helping preserve missions, achievements, and scores.</p>
     <p style="line-height:1.5;color:#c8c1e5;font-size:13px">This does not back up your data or prevent it from being erased if you clear browser/site data, uninstall the browser, or change devices. You can download a profile backup in Manage Profiles.</p>
+    <p style="line-height:1.5;color:#a89ed0;font-size:12px;margin-top:10px;border-top:1px solid #3a2f5c;padding-top:10px">Galactic Academy is an independent educational entertainment experience. It is not affiliated with any school, curriculum provider, or government education program. Content is for fun learning practice only and is not a substitute for formal instruction.</p>
     <button id="storage-protect-yes" class="btn" style="width:100%;margin-top:8px">🛡️ Protect my progress</button>
     <button id="storage-protect-later" class="btn sec" style="width:100%;margin-top:8px">Not now</button>
     <p id="storage-protect-status" aria-live="polite" style="font-size:12px;color:#c8c1e5;text-align:center;margin-bottom:0"></p>
