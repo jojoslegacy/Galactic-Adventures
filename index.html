@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Galactic Academy">
+<meta name="theme-color" content="#0b0820">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-512.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<link rel="icon" type="image/png" sizes="256x256" href="icons/icon-256.png">
+<meta name="description" content="A free space-themed learning adventure: math, reading, geography, Spanish, civics, science, and advanced courses—with focus ambient, missions, and mastery trials.">
+<!-- Open Graph / link-preview (absolute URLs set by the script below so shares work on any host) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Galactic Academy">
+<meta property="og:title" content="Galactic Academy">
+<meta property="og:description" content="Kid-friendly intergalactic lessons and gauntlets for math, reading, geography, Spanish, civics, science, and advanced mastery.">
+<meta property="og:image" id="meta-og-image" content="og.png">
+<meta property="og:image:secure_url" id="meta-og-image-secure" content="og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:image:alt" content="Galactic Academy — kid astronaut logo">
+<meta property="og:url" id="meta-og-url" content="">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Galactic Academy">
+<meta name="twitter:description" content="Kid-friendly intergalactic lessons and gauntlets for math, reading, geography, Spanish, civics, science, and advanced mastery.">
+<meta name="twitter:image" id="meta-twitter-image" content="og.png">
+<meta name="twitter:image:alt" content="Galactic Academy — kid astronaut logo">
+<link rel="image_src" id="meta-image-src" href="og.png">
+<script>
+(function () {
+  // Social crawlers that execute minimal JS, and in-app browsers, get absolute image URLs.
+  // Root-relative fallbacks above still help when the site is served from the domain root.
+  try {
+    var origin = location.origin || (location.protocol + '//' + location.host);
+    var base = origin + location.pathname.replace(/\/[^/]*$/, '/');
+    if (!/\/$/.test(base)) base += '/';
+    var img = base + 'og.png';
+    var page = origin + location.pathname + location.search;
+    function set(id, attr, val) {
+      var el = document.getElementById(id);
+      if (el) el.setAttribute(attr, val);
+    }
+    set('meta-og-image', 'content', img);
+    set('meta-og-image-secure', 'content', img);
+    set('meta-twitter-image', 'content', img);
+    set('meta-og-url', 'content', page);
+    set('meta-image-src', 'href', img);
+  } catch (e) {}
+})();
+</script>
+<link rel="stylesheet" href="styles.css">
+<style>html,body{background:#0b0820;color:#f1eeff;font-family:-apple-system,system-ui,sans-serif}</style>
+<title>Galactic Academy</title>
+</head>
+<body>
+<div id="app"><p style="padding:24px">Loading Galactic Academy…</p></div>
+<script>
+window.addEventListener('error', function (e) {
+  var a = document.getElementById('app');
+  if (a) a.innerHTML = '<p style="padding:24px;color:#ff8aa8"><b>Something went wrong:</b><br>' + e.message + '<br><small>' + (e.filename || '') + ':' + (e.lineno || '') + '</small></p>';
+});
+</script>
+<script src="content/rnd.js"></script>
+<script src="content/academy-extras.js"></script>
+<script src="content/math.js"></script>
+<script src="content/phonics.js"></script>
+<script src="content/geography.js"></script>
+<script src="content/spanish.js"></script>
+<script src="content/civics.js"></script>
+<script src="content/science.js"></script>
+<script src="content/advanced.js"></script>
+  <script src="content/diagrams.js"></script>
+  <script src="content/expand.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

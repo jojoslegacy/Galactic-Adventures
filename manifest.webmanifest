@@ -1,0 +1,16 @@
+{
+  "name": "Galactic Academy",
+  "short_name": "Galactic Academy",
+  "description": "Space-themed learning for kids: math, reading, geography, Spanish, civics, science, and advanced courses. Missions, mastery trials, and focus ambient.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0820",
+  "theme_color": "#0b0820",
+  "icons": [
+    { "src": "icons/icon-256.png", "sizes": "256x256", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
